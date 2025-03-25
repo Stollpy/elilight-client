@@ -20,8 +20,8 @@ const requestDevice = async () => {
 }
 
 const luminosity = ref(255);
-const ledOn = ref(false);
-const fadeOn = ref(false);
+const ledOn = ref(0);
+const fadeOn = ref(0);
 const fadeTime = ref(500);
 
 watch(device, async () => {
@@ -46,6 +46,9 @@ watch(luminosity, async (value) => {
   await BleClient.write(device.value.deviceId, LIGHT_SERVICE, LIGHT_BRIGHTNESS_CHAR, numbersToDataView([value]));
 });
 watch(fadeOn, async (value) => {
+  if (value) {
+    ledOn.value = value;
+  }
   await BleClient.write(device.value.deviceId, LIGHT_SERVICE, LIGHT_FADE_STATE_CHAR, numbersToDataView([value]));
 });
 watch(fadeTime, async (value) => {
