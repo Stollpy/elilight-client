@@ -47,7 +47,7 @@
 	<true/>
 
 	<key>NSBluetoothAlwaysUsageDescription</key>
-    <string>Uses Bluetooth to connect and interact with peripheral BLE devices.</string>
+    <string>Cette app a besoin du Bluetooth pour se connecter à votre Elilight.</string>
     <key>UIBackgroundModes</key>
     <array>
     <string>bluetooth-central</string>
