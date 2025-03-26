@@ -22,7 +22,7 @@ const requestDevice = async () => {
 const luminosity = ref(255);
 const ledOn = ref(0);
 const fadeOn = ref(0);
-const fadeTime = ref(500);
+const fadeTime = ref(255);
 
 watch(device, async () => {
   await BleClient.connect(device.value.deviceId, (deviceId) => onDisconnect(deviceId));
@@ -37,9 +37,14 @@ watch(device, async () => {
   fadeOn.value = fadeState.getUint8(0);
 
   const fadeTimeState = await BleClient.read(device.value.deviceId, LIGHT_SERVICE, LIGHT_FADE_CHAR);
+  console.log("OKKK")
+  console.log(fadeTimeState.getUint8(0))
   fadeTime.value = fadeTimeState.getUint8(0);
 })
 watch(ledOn, async (value) => {
+  if (!value) {
+    await BleClient.write(device.value.deviceId, LIGHT_SERVICE, LIGHT_FADE_STATE_CHAR, numbersToDataView([value]));
+  }
   await BleClient.write(device.value.deviceId, LIGHT_SERVICE, LIGHT_LED_STATE_CHAR, numbersToDataView([value]));
 });
 watch(luminosity, async (value) => {
@@ -71,7 +76,7 @@ onMounted(async () => {
         <UButton @click="fadeOn = !fadeOn" color="neutral">
           {{ fadeOn ? 'Arrêter' : 'Activer' }}
         </UButton>
-        <USlider v-if="fadeOn" v-model="fadeTime" color="neutral" class="mt-4" :min="100" :max="2000"/>
+        <USlider v-if="fadeOn" v-model="fadeTime" color="neutral" class="mt-4" :min="10" :max="255"/>
       </div>
       <div class="w-1/2 p-4 bg-gray-100 flex flex-col items-center justify-center border-b-2 border-solid">
         <div class="mb-4 flex flex-row">
