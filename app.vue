@@ -37,8 +37,6 @@ watch(device, async () => {
   fadeOn.value = fadeState.getUint8(0);
 
   const fadeTimeState = await BleClient.read(device.value.deviceId, LIGHT_SERVICE, LIGHT_FADE_CHAR);
-  console.log("OKKK")
-  console.log(fadeTimeState.getUint8(0))
   fadeTime.value = fadeTimeState.getUint8(0);
 })
 watch(ledOn, async (value) => {
