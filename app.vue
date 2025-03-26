@@ -42,6 +42,7 @@ watch(device, async () => {
 watch(ledOn, async (value) => {
   if (!value) {
     await BleClient.write(device.value.deviceId, LIGHT_SERVICE, LIGHT_FADE_STATE_CHAR, numbersToDataView([value]));
+    fadeOn.value = value;
   }
   await BleClient.write(device.value.deviceId, LIGHT_SERVICE, LIGHT_LED_STATE_CHAR, numbersToDataView([value]));
 });
