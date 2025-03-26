@@ -11,7 +11,6 @@ const device = ref(null);
 const onDisconnect = async (deviceId) => {
   await BleClient.connect(deviceId, (deviceId) => onDisconnect(deviceId));
 }
-
 const requestDevice = async () => {
   device.value = await BleClient.requestDevice({
     namePrefix: "elilight",
@@ -25,6 +24,7 @@ const fadeOn = ref(0);
 const fadeTime = ref(255);
 
 const luminosityBuffer = ref([]);
+const fadeTimeBuffer = ref([]);
 
 const setLuminosity = async (value) => {
   if (typeof value === "object") {
@@ -38,6 +38,22 @@ const setLuminosity = async (value) => {
     );
   } else {
     luminosityBuffer.value.push(value)
+  }
+}
+
+const setFadeTime = async (value) => {
+  if (typeof value === "object") {
+    const data = fadeTimeBuffer.value[fadeTimeBuffer.value.length - 1];
+    console.log(data)
+    fadeTimeBuffer.value = [];
+    await BleClient.write(
+        device.value.deviceId,
+        LIGHT_SERVICE,
+        LIGHT_FADE_CHAR,
+        numbersToDataView([data])
+    );
+  } else {
+    fadeTimeBuffer.value.push(value)
   }
 }
 
@@ -70,9 +86,7 @@ watch(fadeOn, async (value) => {
   }
   await BleClient.write(device.value.deviceId, LIGHT_SERVICE, LIGHT_FADE_STATE_CHAR, numbersToDataView([value]));
 });
-watch(fadeTime, async (value) => {
-  await BleClient.write(device.value.deviceId, LIGHT_SERVICE, LIGHT_FADE_CHAR, numbersToDataView([value]));
-});
+watch(fadeTime, setFadeTime);
 
 onMounted(async () => {
   await BleClient.initialize();
@@ -90,7 +104,7 @@ onMounted(async () => {
         <UButton @click="fadeOn = !fadeOn" color="neutral">
           {{ fadeOn ? 'Arrêter' : 'Activer' }}
         </UButton>
-        <USlider v-if="fadeOn" v-model="fadeTime" color="neutral" class="mt-4" :min="10" :max="255"/>
+        <USlider v-if="fadeOn" v-model="fadeTime" @touchend="setFadeTime" @mouseup="setFadeTime" color="neutral" class="mt-4" :min="10" :max="255"/>
       </div>
       <div class="w-1/2 p-4 bg-gray-100 flex flex-col items-center justify-center border-b-2 border-solid">
         <div class="mb-4 flex flex-row">
