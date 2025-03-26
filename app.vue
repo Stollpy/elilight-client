@@ -24,6 +24,23 @@ const ledOn = ref(0);
 const fadeOn = ref(0);
 const fadeTime = ref(255);
 
+const luminosityBuffer = ref([]);
+
+const setLuminosity = async (value) => {
+  if (typeof value === "object") {
+    const data = luminosityBuffer.value[luminosityBuffer.value.length - 1];
+    luminosityBuffer.value = [];
+    await BleClient.write(
+        device.value.deviceId,
+        LIGHT_SERVICE,
+        LIGHT_BRIGHTNESS_CHAR,
+        numbersToDataView([data])
+    );
+  } else {
+    luminosityBuffer.value.push(value)
+  }
+}
+
 watch(device, async () => {
   await BleClient.connect(device.value.deviceId, (deviceId) => onDisconnect(deviceId));
 
@@ -46,9 +63,7 @@ watch(ledOn, async (value) => {
   }
   await BleClient.write(device.value.deviceId, LIGHT_SERVICE, LIGHT_LED_STATE_CHAR, numbersToDataView([value]));
 });
-watch(luminosity, async (value) => {
-  await BleClient.write(device.value.deviceId, LIGHT_SERVICE, LIGHT_BRIGHTNESS_CHAR, numbersToDataView([value]));
-});
+watch(luminosity, setLuminosity);
 watch(fadeOn, async (value) => {
   if (value) {
     ledOn.value = value;
@@ -81,7 +96,7 @@ onMounted(async () => {
         <div class="mb-4 flex flex-row">
           <p>Luminosité</p> <Icon class="mt-1" name="uil:lightbulb-alt" />
         </div>
-        <USlider v-model="luminosity" color="neutral" orientation="vertical" class="h-48" :max="255" :min="0"/>
+        <USlider v-model="luminosity" @touchend="setLuminosity" @mouseup="setLuminosity" color="neutral" orientation="vertical" class="h-48" :max="255" :min="0"/>
       </div>
     </div>
 
